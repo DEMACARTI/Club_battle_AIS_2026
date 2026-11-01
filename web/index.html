@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sketch Duel</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Sketch<span>Duel</span></div>
+    <div class="topbar-info">
+      <span id="round-indicator" class="pill hidden"></span>
+      <span class="pill score-pill">Team score <strong id="score">0</strong></span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Start screen -->
+    <section id="screen-start" class="screen">
+      <div class="card start-card">
+        <h1>You draw. The AI guesses.<br>The AI draws. You guess.</h1>
+        <p class="lede">
+          Take turns with a neural network. In <b>AI rounds</b> it sketches a
+          mystery word stroke by stroke and you race to name it. In
+          <b>your rounds</b> you draw a word and the AI calls out guesses,
+          with how confident it is, until it gets it.
+        </p>
+        <div class="how">
+          <div class="how-item ai">
+            <div class="how-icon">✏️🤖</div>
+            <div><b>AI draws, you guess</b><br>Type your guess any time. Faster = more points.</div>
+          </div>
+          <div class="how-item you">
+            <div class="how-icon">✏️🙂</div>
+            <div><b>You draw, AI guesses</b><br>The AI wins the round when it's confident in the right word.</div>
+          </div>
+        </div>
+        <fieldset class="choice">
+          <legend>Difficulty</legend>
+          <label><input type="radio" name="difficulty" value="easy"> Easy</label>
+          <label><input type="radio" name="difficulty" value="normal" checked> Normal</label>
+          <label><input type="radio" name="difficulty" value="hard"> Hard</label>
+        </fieldset>
+        <p class="choice-note" id="difficulty-note"></p>
+        <button id="start-btn" class="btn primary big">Start game</button>
+        <p id="start-error" class="error hidden"></p>
+      </div>
+    </section>
+
+    <!-- Round screen -->
+    <section id="screen-round" class="screen hidden">
+      <div class="round-head">
+        <div>
+          <div id="round-type" class="round-type"></div>
+          <div id="prompt" class="prompt"></div>
+        </div>
+        <div class="timer" aria-label="Time left">
+          <div class="timer-bar"><div id="timer-fill"></div></div>
+          <span id="timer-text">0</span>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="board-wrap">
+          <canvas id="board" width="640" height="480"></canvas>
+          <div id="board-tools" class="board-tools hidden">
+            <button id="undo-btn" class="btn small">↶ Undo</button>
+            <button id="clear-btn" class="btn small">Clear</button>
+          </div>
+          <div id="overlay" class="overlay hidden">
+            <div class="overlay-card">
+              <div id="overlay-icon" class="overlay-icon"></div>
+              <div id="overlay-title" class="overlay-title"></div>
+              <div id="overlay-text" class="overlay-text"></div>
+              <div id="overlay-actions" class="overlay-actions"></div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="side">
+          <!-- AI draws, you guess -->
+          <div id="guess-panel" class="panel hidden">
+            <div class="panel-title">What is the AI drawing?</div>
+            <div id="hint" class="hint"></div>
+            <form id="guess-form" class="guess-form" autocomplete="off">
+              <input id="guess-input" type="text" placeholder="Type a guess…" maxlength="40">
+              <button class="btn primary" type="submit">Guess</button>
+            </form>
+            <div id="guess-feedback" class="feedback"></div>
+            <ul id="guess-list" class="guess-list"></ul>
+            <button id="guess-pass-btn" class="btn ghost">Pass</button>
+          </div>
+
+          <!-- You draw, AI guesses -->
+          <div id="ai-panel" class="panel hidden">
+            <div class="ai-head">
+              <div class="ai-avatar" id="ai-avatar">🤖</div>
+              <div id="ai-bubble" class="bubble">I'm watching…</div>
+            </div>
+            <div class="panel-title small">What the AI sees</div>
+            <ol id="ai-guesses" class="bars"></ol>
+            <button id="draw-pass-btn" class="btn ghost">Pass</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Results screen -->
+    <section id="screen-results" class="screen hidden">
+      <div class="card results-card">
+        <h1>Final team score: <span id="final-score">0</span></h1>
+        <div class="summary">
+          <div class="summary-item you">
+            <div class="summary-num" id="summary-you"></div>
+            <div>of the AI's drawings guessed by you</div>
+          </div>
+          <div class="summary-item ai">
+            <div class="summary-num" id="summary-ai"></div>
+            <div>of your drawings guessed by the AI</div>
+          </div>
+        </div>
+        <div id="gallery" class="gallery"></div>
+        <button id="again-btn" class="btn primary big">Play again</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/classifier-weights.js"></script>
+  <script src="js/classifier.js"></script>
+  <script src="js/sketch-rnn.js"></script>
+  <script src="js/ai-workers.js"></script>
+  <script src="js/words.js"></script>
+  <script src="js/board.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

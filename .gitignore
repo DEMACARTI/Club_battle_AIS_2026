@@ -1,0 +1,6 @@
+# Downloaded and generated training data (rebuild with the training/ scripts)
+training/data/
+training/*.log
+__pycache__/
+*.pyc
+.DS_Store

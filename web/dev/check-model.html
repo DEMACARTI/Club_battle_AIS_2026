@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sketch-RNN check</title>
+  <style>body { font: 15px system-ui; margin: 24px; } pre { background: #f4f4f4; padding: 12px; }</style>
+</head>
+<body>
+  <h1>js/sketch-rnn.js vs @magenta/sketch</h1>
+  <p>Loads the same model with both and feeds them the same pen strokes. The
+     largest difference in the output distribution should be around 1e-5.</p>
+  <label>Word <input id="word" value="cat"></label>
+  <label>Model set <select id="set"><option>large_models</option><option>models</option></select></label>
+  <button id="run">Compare</button>
+  <pre id="out">Not run yet.</pre>
+
+  <script src="../vendor/magentasketch.js"></script>
+  <script src="../js/sketch-rnn.js"></script>
+  <script>
+    async function compare(word, modelSet) {
+      const url = SketchRNNLite.modelUrl(modelSet, word);
+      const lib = new ms.SketchRNN(url);
+      await lib.initialize();
+      const ours = await SketchRNNLite.loadSketchRNN(modelSet, word);
+      let s1 = lib.zeroState(), s2 = ours.zeroState();
+      let worst = 0;
+      const inputs = [[0, 0, 1, 0, 0], [0.3, -0.2, 1, 0, 0], [-0.5, 0.1, 0, 1, 0],
+                      [0.1, 0.4, 1, 0, 0], [0.2, 0.2, 1, 0, 0]];
+      for (const input of inputs) {
+        // The library divides offsets by its scale factor; ours takes model units.
+        s1 = lib.update([input[0] * lib.scaleFactor, input[1] * lib.scaleFactor,
+                         input[2], input[3], input[4]], s1);
+        s2 = ours.update(input, s2);
+        const a = lib.getPDF(s1, 0.4), b = ours.getPDF(s2, 0.4);
+        // Only the first 20 sigmaY entries: magenta-js 0.2.0 slices sigmaY with
+        // the wrong end index, so the rest of its array is other data.
+        for (const key of ['pi', 'muX', 'muY', 'sigmaX', 'sigmaY', 'corr', 'pen']) {
+          for (let i = 0; i < b[key].length; i++) {
+            worst = Math.max(worst, Math.abs(a[key][i] - b[key][i]));
+          }
+        }
+      }
+      lib.dispose();
+      return { word, modelSet, units: ours.units, maxDifference: worst };
+    }
+
+    document.getElementById('run').addEventListener('click', async () => {
+      const out = document.getElementById('out');
+      out.textContent = 'Running…';
+      try {
+        const result = await compare(document.getElementById('word').value.trim(),
+                                     document.getElementById('set').value);
+        out.textContent = JSON.stringify(result, null, 2);
+      } catch (err) {
+        out.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
